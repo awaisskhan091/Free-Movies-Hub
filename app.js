@@ -20,7 +20,7 @@ const save=()=>{const ed={},vw={};DB.movies.forEach(m=>{vw[m.id]=m.views;const b
 /* ---------- Helpers ---------- */
 const $=s=>document.querySelector(s),app=$("#app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const slug=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const toast=m=>{const t=$("#toast");t.textContent=m;t.style.opacity=1;setTimeout(()=>t.style.opacity=0,2200)};
 const live=()=>DB.movies.filter(m=>m.pub);
 const poster=m=>`<div class="po" style="background:linear-gradient(160deg,${m.c[0]},${m.c[1]})">${m.poster?`<img src="${esc(m.poster)}" alt="${esc(m.t)} poster" loading="lazy" decoding="async" width="300" height="450">`:`<span>${esc(m.t)}</span>`}</div>`;

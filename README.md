@@ -26,3 +26,13 @@ For large audiences, host videos on a CDN/video host and paste the link instead 
 - Every published movie needs a license type and proof of rights. Only add content you may legally stream.
 - Visitor accounts, watchlists and history are stored in each visitor's browser (demo). Use database/schema.sql with Supabase/PostgreSQL for real accounts.
 - `tools/generate-sitemap.js` rebuilds the sitemap manually if you edit movies.json by hand.
+
+## Hosting on GitHub Pages
+GitHub Pages only serves static files, so server.js does not run there. The admin panel detects this and switches to **GitHub mode**:
+it saves movies by committing movies.json (and posters) to your repository through the GitHub API.
+1. Create a repository and upload all files in this folder. In Settings → Pages choose "Deploy from a branch", branch main, folder / (root).
+2. Open https://YOURNAME.github.io/REPO/admin.html and connect with a fine-grained token (Contents: Read and write, only this repository).
+3. Add movies as usual. Changes appear on the site about a minute after saving.
+4. Videos cannot be uploaded in GitHub mode (repository file limits, bandwidth). Host them elsewhere and paste the link.
+5. Optional: `node tools/set-domain.js https://YOURNAME.github.io/REPO` replaces the placeholder domain in the pages.
+Note: a public repository exposes movies.json, including the "proof of rights" text. Do not put private details in it.

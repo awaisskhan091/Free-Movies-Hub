@@ -20,7 +20,14 @@ label.l{display:grid;gap:5px;font-size:.88rem;color:var(--mu)}label.l input,labe
 @media(max-width:700px){.g2{grid-template-columns:1fr}}
 </style></head>
 <body>
-<div id="login" hidden><div class="w pg"><form class="fm" id="lf"><h1>Admin login</h1><input type="password" id="pw" placeholder="Admin password" required aria-label="Admin password" autocomplete="current-password"><button class="btn">Log in</button><p class="er" id="le" role="alert"></p><p class="mu"><a href="index.html">← Back to site</a></p></form></div></div>
+<div id="login" hidden><div class="w pg"><form class="fm" id="lf"><h1>Admin login</h1><input type="password" id="pw" placeholder="Admin password" required aria-label="Admin password" autocomplete="current-password"><button class="btn">Log in</button><p class="er" id="le" role="alert"></p><p class="mu"><a href="index.html">← Back to site</a></p></form>
+<form class="fm" id="gf" hidden style="max-width:520px"><h1>Connect to GitHub</h1><p class="mu">This site is hosted on GitHub, so the admin panel saves your movies by committing changes to your repository.</p>
+<input id="g-repo" placeholder="Repository, e.g. myname/openreel" aria-label="Repository" required><input id="g-branch" placeholder="Branch (leave blank for the default)" aria-label="Branch">
+<input id="g-token" type="password" placeholder="GitHub access token" aria-label="GitHub access token" required autocomplete="off">
+<label class="mu" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="g-rem" style="width:auto"> Remember on this device</label>
+<button class="btn">Connect</button><p class="er" id="ge" role="alert"></p>
+<details class="mu"><summary style="cursor:pointer">How do I get a token?</summary><ol style="padding-left:20px;margin-top:8px;display:grid;gap:4px"><li>On GitHub open Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.</li><li>Under Repository access choose “Only select repositories” and pick your site repository.</li><li>Under Repository permissions set <b>Contents</b> to “Read and write”.</li><li>Generate the token, copy it and paste it above. Treat it like a password.</li></ol></details>
+<p class="mu"><a href="index.html">← Back to site</a></p></form></div></div>
 <div id="panel" hidden><header><div class="w top2"><a class="logo" href="index.html">Open<b>Reel</b> <span class="mu" style="font:500 .9rem Figtree">Admin</span></a><span class="sp"></span><a class="btn g sm" href="index.html" target="_blank" rel="noopener">View site</a><button class="btn g sm" id="lo">Log out</button></div></header>
 <div class="w pg">
 <div class="tb" id="tabs"><button data-t="movies" class="on">Movies</button><button data-t="form" id="tabform">Add movie</button><button data-t="genres">Genres</button><button data-t="ads">Advertisements</button><button data-t="stats">Overview</button></div>
@@ -40,7 +47,7 @@ label.l{display:grid;gap:5px;font-size:.88rem;color:var(--mu)}label.l input,labe
 
 <div class="card2"><h2>3. Poster, video and trailer</h2><p class="hint">Upload a file or paste a link. Only add video you have the right to stream.</p><div class="g2">
 <div class="f"><span class="hint">Poster image (JPG, PNG or WebP, up to 10 MB)</span><div class="up" style="margin-top:6px"><img id="pv" class="prev" alt="Poster preview" hidden><input type="text" id="f-poster" placeholder="https://… or upload →" aria-label="Poster URL"><label class="btn g sm" for="u-poster" style="cursor:pointer">Upload poster</label><input type="file" id="u-poster" accept="image/png,image/jpeg,image/webp" hidden><progress id="b-poster" max="100" hidden></progress></div></div>
-<div class="f"><span class="hint">Movie video (MP4 or WebM file, or a link to .mp4 / .webm / .m3u8)</span><div class="up" style="margin-top:6px"><input type="text" id="f-video" placeholder="https://… or upload →" aria-label="Video URL"><label class="btn g sm" for="u-video" style="cursor:pointer">Upload video</label><input type="file" id="u-video" accept="video/mp4,video/webm" hidden><progress id="b-video" max="100" hidden></progress></div></div>
+<div class="f"><span class="hint">Movie video (MP4 or WebM file, or a link to .mp4 / .webm / .m3u8)</span><div class="up" style="margin-top:6px"><input type="text" id="f-video" placeholder="https://… or upload →" aria-label="Video URL"><label class="btn g sm" id="uvl" for="u-video" style="cursor:pointer">Upload video</label><input type="file" id="u-video" accept="video/mp4,video/webm" hidden><progress id="b-video" max="100" hidden></progress></div></div>
 <label class="l f">Trailer or project page link (optional)<input id="f-trailer" type="url" placeholder="https://…"></label></div></div>
 
 <div class="card2"><h2>4. Rights</h2><p class="hint">Required before a movie can go live. Keep the evidence (licence, permission email, public-domain record).</p><div class="g2">

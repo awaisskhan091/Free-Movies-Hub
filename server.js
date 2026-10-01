@@ -11,7 +11,7 @@ const sha=s=>crypto.createHash('sha256').update(String(s)).digest();
 const json=(res,code,obj,h={})=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store',...h});res.end(JSON.stringify(obj))};
 const cookie=req=>Object.fromEntries((req.headers.cookie||'').split(';').map(c=>c.trim().split('=')).filter(c=>c[0]));
 const isAdmin=req=>{const t=cookie(req).or_admin,e=sessions.get(t);return !!(t&&e&&e>Date.now())};
-const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const slugify=s=>String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function body(req,limit){return new Promise((ok,no)=>{let b='';req.on('data',c=>{b+=c;if(b.length>limit){no(new Error('Too large'));req.destroy()}});req.on('end',()=>ok(b));req.on('error',no)})}
 function validate(c){
  if(!c||!Array.isArray(c.movies)||!Array.isArray(c.genres)||!Array.isArray(c.ads))return 'Invalid catalog format.';
