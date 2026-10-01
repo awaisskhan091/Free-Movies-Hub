@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /profile.html
+Disallow: /watchlist.html
+Disallow: /history.html
+Disallow: /search.html
+
+Sitemap: https://your-domain.com/sitemap.xml
