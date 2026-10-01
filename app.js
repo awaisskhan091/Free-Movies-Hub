@@ -1,21 +1,22 @@
 /* OpenReel shared script: data layer, renderers for every page, auth, player, admin. */
 "use strict";
 /* ---------- Data (stored in localStorage; swap for Supabase/Postgres API in production) ---------- */
-const B="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/";
-const SEED={movies:[
-{id:1,slug:"big-buck-bunny",t:"Big Buck Bunny",y:2008,lang:"English",rt:10,rate:7.6,g:["Animation","Comedy","Family"],d:"A giant rabbit with a heart bigger than himself takes on three bullying rodents in this Blender Foundation open movie.",dir:"Sacha Goedegebure",cast:["Voice-free short"],v:B+"BigBuckBunny.mp4",tr:"https://peach.blender.org/",lic:"creator_permission",proof:"CC BY 3.0 – Blender Foundation",feat:1,pub:1,views:420,c:["#2f6f4e","#d8a24a"],added:5},
-{id:2,slug:"sintel",t:"Sintel",y:2010,lang:"English",rt:15,rate:7.7,g:["Animation","Fantasy","Adventure"],d:"A lonely young woman searches a harsh world for the baby dragon she once befriended.",dir:"Colin Levy",cast:["Halina Reijn","Thom Hoffman"],v:B+"Sintel.mp4",tr:"https://durian.blender.org/",lic:"creator_permission",proof:"CC BY 3.0 – Blender Foundation",feat:0,pub:1,views:380,c:["#7a2d4f","#e0785a"],added:4},
-{id:3,slug:"tears-of-steel",t:"Tears of Steel",y:2012,lang:"English",rt:12,rate:6.9,g:["Sci-Fi","Action"],d:"In a future Amsterdam, a group of warriors and scientists try to save the world from destructive robots.",dir:"Ian Hubert",cast:["Derek de Lint","Sergio Hasselbaink","Vanja Rukavina"],v:B+"TearsOfSteel.mp4",tr:"https://mango.blender.org/",lic:"creator_permission",proof:"CC BY 3.0 – Blender Foundation",feat:0,pub:1,views:300,c:["#1d4e7a","#69b6d6"],added:3},
-{id:4,slug:"elephants-dream",t:"Elephants Dream",y:2006,lang:"English",rt:11,rate:6.4,g:["Animation","Sci-Fi"],d:"Two strange characters explore a capricious and seemingly infinite machine in the first Blender open movie.",dir:"Bassam Kurdali",cast:["Cas Jansen","Tygo Gernandt"],v:B+"ElephantsDream.mp4",tr:"https://orange.blender.org/",lic:"creator_permission",proof:"CC BY 2.5 – Blender Foundation",feat:0,pub:1,views:210,c:["#5a3b7a","#c9a0e0"],added:2},
-{id:5,slug:"nosferatu",t:"Nosferatu",y:1922,lang:"German (silent)",rt:94,rate:7.9,g:["Horror","Classic"],d:"Vampire Count Orlok expresses interest in a new residence and in the wife of his real estate agent.",dir:"F. W. Murnau",cast:["Max Schreck","Greta Schröder"],v:"",tr:"",lic:"public_domain",proof:"",feat:0,pub:1,views:150,c:["#222","#7d7d7d"],added:1},
-{id:6,slug:"a-trip-to-the-moon",t:"A Trip to the Moon",y:1902,lang:"French (silent)",rt:14,rate:8.0,g:["Sci-Fi","Classic","Fantasy"],d:"Georges Méliès's landmark fantasy of astronomers launched by cannon to the lunar surface.",dir:"Georges Méliès",cast:["Georges Méliès"],v:"",tr:"",lic:"public_domain",proof:"",feat:0,pub:1,views:170,c:["#2b3a67","#e8c15a"],added:1},
-{id:7,slug:"the-general",t:"The General",y:1926,lang:"English (silent)",rt:78,rate:8.1,g:["Comedy","Classic","Adventure"],d:"A railroad engineer chases the Union soldiers who stole his locomotive in Buster Keaton's comic masterpiece.",dir:"Buster Keaton",cast:["Buster Keaton","Marion Mack"],v:"",tr:"",lic:"public_domain",proof:"",feat:0,pub:1,views:120,c:["#6b4a2b","#e1c999"],added:1},
-{id:8,slug:"night-of-the-living-dead",t:"Night of the Living Dead",y:1968,lang:"English",rt:96,rate:7.8,g:["Horror","Classic"],d:"A group of strangers barricade themselves in a farmhouse against flesh-eating ghouls.",dir:"George A. Romero",cast:["Duane Jones","Judith O'Dea"],v:"",tr:"",lic:"public_domain",proof:"",feat:0,pub:1,views:190,c:["#2a2a2a","#a33"],added:1}],
-genres:["Animation","Comedy","Family","Fantasy","Adventure","Sci-Fi","Action","Horror","Classic","Drama"],
-users:[{id:1,name:"Admin",email:"admin@openreel.test",pw:"admin123",role:"admin",wl:[],hist:[],joined:"2026-01-01"}],
-ads:[{id:1,place:"home_banner",title:"Your sponsor here",link:"contact.html",on:1,clicks:0}],nextId:9};
-const DB=JSON.parse(localStorage.getItem("or_db")||"null")||SEED,save=()=>localStorage.setItem("or_db",JSON.stringify(DB));
-let me=DB.users.find(u=>u.id==localStorage.getItem("or_me"))||null;
+const SEED={users:[{"id":1,"name":"Admin","email":"admin@openreel.test","pw":"admin123","role":"admin","wl":[],"hist":[],"joined":"2026-01-01"}]};
+let DB=null,BASE=null,me=null;
+const LS=k=>JSON.parse(localStorage.getItem(k)||"null");
+async function loadDB(){
+ try{const r=await fetch("movies.json",{cache:"no-cache"});if(!r.ok)throw 0;BASE=await r.json()}
+ catch(e){BASE={movies:[],genres:[],ads:[]};document.getElementById("app").insertAdjacentHTML("beforebegin",'<p class="w pg er" role="alert">Could not load movies.json. Serve this folder over http (for example: python3 -m http.server 8000) instead of opening the files directly.</p>')}
+ const L=LS("or_local")||{},del=L.deleted||[],ed=L.movies||{},vw=L.views||{};
+ const movies=BASE.movies.filter(m=>!del.includes(m.id)).map(m=>ed[m.id]||m);
+ Object.values(ed).forEach(m=>{if(!BASE.movies.some(b=>b.id==m.id))movies.push(m)});
+ movies.forEach(m=>{if(vw[m.id]!=null)m.views=vw[m.id]});
+ DB={movies,genres:L.genres||BASE.genres,users:L.users||SEED.users,ads:L.ads||BASE.ads,nextId:Math.max(L.nextId||0,1,...BASE.movies.map(m=>m.id+1),...Object.keys(ed).map(i=>+i+1))};
+ me=DB.users.find(u=>u.id==localStorage.getItem("or_me"))||null}
+const save=()=>{const ed={},vw={};DB.movies.forEach(m=>{vw[m.id]=m.views;const b=BASE.movies.find(x=>x.id==m.id);if(!b||JSON.stringify({...b,views:0})!=JSON.stringify({...m,views:0}))ed[m.id]=m});
+ const same=(x,y)=>JSON.stringify(x)==JSON.stringify(y);
+ localStorage.setItem("or_local",JSON.stringify({movies:ed,views:vw,deleted:BASE.movies.filter(b=>!DB.movies.some(m=>m.id==b.id)).map(b=>b.id),genres:same(DB.genres,BASE.genres)?null:DB.genres,ads:same(DB.ads,BASE.ads)?null:DB.ads,users:DB.users,nextId:DB.nextId}))};
+
 /* ---------- Helpers ---------- */
 const $=s=>document.querySelector(s),app=$("#app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -97,7 +98,7 @@ P.admin=()=>{if(!need())return"";if(me.role!="admin"){location.href="index.html"
  <input name="poster" placeholder="Poster image URL (optional)" value="${esc(f.poster)}"><input name="tr" placeholder="Trailer URL" value="${esc(f.tr)}"><input class="f" name="v" placeholder="Authorized video URL or upload below" value="${esc(f.v)}"><input class="f" type="file" id="pfile" accept="image/*" aria-label="Upload poster image"><input class="f" type="file" id="vf" accept="video/*" aria-label="Upload video file">
  <select name="lic"><option value="public_domain" ${f.lic=="public_domain"?"selected":""}>Public domain</option><option value="licensed" ${f.lic=="licensed"?"selected":""}>Licensed</option><option value="creator_permission" ${f.lic=="creator_permission"?"selected":""}>Creator permission</option></select><input name="proof" placeholder="Proof of rights (URL / note) – required" value="${esc(f.proof)}">
  <textarea class="f" name="d" rows="3" placeholder="Description">${esc(f.d)}</textarea><label><input type="checkbox" name="feat" ${f.feat?"checked":""}> Featured</label><label><input type="checkbox" name="pub" ${f.pub?"checked":""}> Published</label><button class="btn f">${edit?"Save changes":"Add movie"}</button></form>
- <table><thead><tr><th>Title</th><th>Year</th><th>License</th><th>Status</th><th></th></tr></thead><tbody>${DB.movies.map(m=>`<tr><td>${esc(m.t)}${m.feat?" ★":""}</td><td>${m.y}</td><td>${m.lic}</td><td>${m.pub?"Live":"Draft"}</td><td><button class="btn g sm" data-ed="${m.id}">Edit</button> <button class="btn g sm" data-del="${m.id}">Delete</button></td></tr>`).join("")}</tbody></table>`;
+ <p class="mu" style="margin-bottom:14px">Changes here are saved in this browser only. Click export, then replace movies.json on your server to publish them for everyone. <button type="button" class="btn g sm" id="ex">Export movies.json</button></p><table><thead><tr><th>Title</th><th>Year</th><th>License</th><th>Status</th><th></th></tr></thead><tbody>${DB.movies.map(m=>`<tr><td>${esc(m.t)}${m.feat?" ★":""}</td><td>${m.y}</td><td>${m.lic}</td><td>${m.pub?"Live":"Draft"}</td><td><button class="btn g sm" data-ed="${m.id}">Edit</button> <button class="btn g sm" data-del="${m.id}">Delete</button></td></tr>`).join("")}</tbody></table>`;
  if(tab=="genres")body=`<form class="fl" id="gf"><input name="n" placeholder="New genre" required><button class="btn">Add genre</button></form>${DB.genres.map(g=>`<span class="pill">${esc(g)} <button data-dg="${esc(g)}" aria-label="Delete ${esc(g)}" style="background:none;border:0;color:var(--mu);cursor:pointer">×</button></span>`).join("")}`;
  if(tab=="users")body=`<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead><tbody>${DB.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${u.role}</td><td>${u.id!=me.id?`<button class="btn g sm" data-role="${u.id}">Make ${u.role=="admin"?"user":"admin"}</button> <button class="btn g sm" data-du="${u.id}">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`;
  if(tab=="ads")body=`<form class="fl" id="af"><select name="place">${["home_banner","movie_below_player"].map(p=>`<option>${p}</option>`).join("")}</select><input name="title" placeholder="Ad text" required><input name="link" placeholder="Link URL" required><button class="btn">Add ad</button></form><table><tbody>${DB.ads.map(a=>`<tr><td>${a.place}</td><td>${esc(a.title)}</td><td>${a.clicks} clicks</td><td><button class="btn g sm" data-ta="${a.id}">${a.on?"Pause":"Activate"}</button> <button class="btn g sm" data-da="${a.id}">Delete</button></td></tr>`).join("")}</tbody></table>`;
@@ -118,13 +119,13 @@ function bind(k,s){const $$=(sel,fn)=>app.querySelectorAll(sel).forEach(fn),on=(
  on("#ch","click",()=>{me.hist=[];save();route()});$$("[data-rm]",b=>b.onclick=()=>{me.wl=me.wl.filter(i=>i!=b.dataset.rm);save();route()});
  if(k=="movie"){const m=DB.movies.find(x=>x.slug==s);if(!m)return;
   on("#wl","click",()=>{if(!need())return;me.wl=me.wl.includes(m.id)?me.wl.filter(i=>i!=m.id):[...me.wl,m.id];save();route()});
-  const v=$("#vid");if(v){const f=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
+  const v=$("#vid");if(v){if(/\.m3u8(\?|$)/i.test(m.v)&&!v.canPlayType("application/vnd.apple.mpegurl")){v.dataset.hls=1;v.removeAttribute("src");const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.8/hls.min.js";sc.onload=()=>{if(window.Hls&&Hls.isSupported()){const h=new Hls();h.loadSource(m.v);h.attachMedia(v)}else toast("This browser cannot play HLS streams.")};document.head.appendChild(sc)}const f=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
    $("#pp").onclick=v.onclick=()=>v.paused?v.play():v.pause();
    v.onplay=()=>{$("#pp").textContent="❚❚";m.views++;if(me){me.hist=[{id:m.id,at:Date.now()},...me.hist.filter(h=>h.id!=m.id)];}save()};v.onpause=()=>$("#pp").textContent="▶";
    v.ontimeupdate=()=>{$("#sk").value=v.currentTime/v.duration*100||0;$("#tm").textContent=f(v.currentTime)+" / "+f(v.duration||0)};
    $("#sk").oninput=e=>v.currentTime=e.target.value/100*v.duration;$("#vl").oninput=e=>v.volume=e.target.value;$("#sp").onchange=e=>v.playbackRate=+e.target.value;
    $("#fs").onclick=()=>document.fullscreenElement?document.exitFullscreen():v.parentElement.requestFullscreen();
-   v.onerror=()=>toast("Video could not be loaded. Check the source URL.")}}
+   v.onerror=()=>v.dataset.hls||toast("Video could not be loaded. Check the source URL.")}}
  if(k=="admin"){$$("[data-tab]",b=>b.onclick=()=>{tab=b.dataset.tab;edit=null;route()});
   $$("[data-ed]",b=>b.onclick=()=>{edit=DB.movies.find(m=>m.id==b.dataset.ed);route()});
   $$("[data-del]",b=>b.onclick=()=>{if(confirm("Delete this movie?")){DB.movies=DB.movies.filter(m=>m.id!=b.dataset.del);save();route()}});
@@ -132,11 +133,11 @@ function bind(k,s){const $$=(sel,fn)=>app.querySelectorAll(sel).forEach(fn),on=(
   $$("[data-role]",b=>b.onclick=()=>{const u=DB.users.find(x=>x.id==b.dataset.role);u.role=u.role=="admin"?"user":"admin";save();route()});
   $$("[data-du]",b=>b.onclick=()=>{if(confirm("Delete this user?")){DB.users=DB.users.filter(u=>u.id!=b.dataset.du);save();route()}});
   $$("[data-ta]",b=>b.onclick=()=>{const a=DB.ads.find(x=>x.id==b.dataset.ta);a.on=a.on?0:1;save();route()});$$("[data-da]",b=>b.onclick=()=>{DB.ads=DB.ads.filter(a=>a.id!=b.dataset.da);save();route()});
-  on("#gf","submit",e=>{DB.genres.push(fd(e).n);save();route()});on("#af","submit",e=>{DB.ads.push({id:Date.now(),...fd(e),on:1,clicks:0});save();route()});
+  on("#ex","click",()=>{const cl=v=>(v||"").startsWith("blob:")?"":v;const out={movies:DB.movies.map(m=>({...m,v:cl(m.v),poster:cl(m.poster)})),genres:DB.genres,ads:DB.ads};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"}));a.download="movies.json";a.click();toast("Exported. Upload it to replace movies.json")});on("#gf","submit",e=>{DB.genres.push(fd(e).n);save();route()});on("#af","submit",e=>{DB.ads.push({id:Date.now(),...fd(e),on:1,clicks:0});save();route()});
   on("#mf","submit",e=>{const d=fd(e),c=x=>x.split(",").map(s=>s.trim()).filter(Boolean);
    if(!d.proof&&!confirm("No proof of rights recorded. Only publish content you are authorized to stream. Save anyway?"))return;
    const pfl=$("#pfile").files[0],file=$("#vf").files[0],vurl=file?URL.createObjectURL(file):d.v;if(file)toast("Uploaded files are session-only in demo mode; use storage in production.");
    const m=Object.assign(edit||{id:DB.nextId++,views:0,added:Date.now(),c:["#3a3358","#a493d9"]},{t:d.t,slug:edit?edit.slug:slug(d.t+"-"+d.y),y:+d.y||0,lang:d.lang||"English",rt:+d.rt||0,rate:+d.rate||0,g:c(d.g),dir:d.dir,cast:c(d.cast),v:vurl,tr:d.tr,poster:pfl?URL.createObjectURL(pfl):d.poster,lic:d.lic,proof:d.proof,d:d.d,feat:d.feat?1:0,pub:d.pub?1:0});
    if(m.feat)DB.movies.forEach(x=>{if(x.id!=m.id)x.feat=0});if(!edit)DB.movies.push(m);edit=null;save();route();toast("Saved")})}}
 $("#sf").addEventListener("submit",e=>{e.preventDefault();location.href="search.html?q="+encodeURIComponent($("#q").value)});
-route();
+loadDB().then(route);
