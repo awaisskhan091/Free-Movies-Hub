@@ -1,24 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin dashboard – OpenReel</title><meta name="description" content="OpenReel administration.">
-<meta name="robots" content="noindex,follow"><link rel="canonical" href="https://your-domain.com/admin.html">
-<meta property="og:site_name" content="OpenReel"><meta property="og:title" content="Admin dashboard – OpenReel"><meta property="og:description" content="OpenReel administration."><meta property="og:type" content="website"><meta property="og:url" content="https://your-domain.com/admin.html">
-<meta name="theme-color" content="#13111c">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin – OpenReel</title><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#13111c">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-</head>
-<body data-page="admin">
-<a class="skip" href="#app">Skip to content</a>
-<header><div class="w"><a class="logo" href="index.html">Open<b>Reel</b></a>
-<nav class="m" aria-label="Main"><a href="index.html">Home</a><a href="movies.html">Movies</a><a href="genre.html">Genres</a><a href="watchlist.html">Watchlist</a></nav>
-<form class="sf" role="search" id="sf" action="search.html"><input type="search" name="q" id="q" placeholder="Title, actor, director, genre, year…" aria-label="Search movies"></form>
-<a class="btn g sm" id="acct" href="login.html">Log in</a></div></header>
-<main id="app" tabindex="-1"><noscript><p class="w pg">Please enable JavaScript to use OpenReel.</p></noscript></main>
-<footer><div class="w"><div><div class="logo">Open<b>Reel</b></div><p>Only public-domain, licensed or permission-granted films.</p></div>
-<nav aria-label="Footer"><a href="about.html">About</a><a href="contact.html">Contact</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="dmca.html">Copyright / DMCA</a></nav></div></footer><div id="toast" role="status"></div>
-<script src="app.js" defer></script>
-</body>
-</html>
+<style>
+.top2{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 0}.top2 .sp{flex:1}
+.card2{background:var(--s);border-radius:var(--r);padding:20px;margin-bottom:18px}.card2 h2{font-size:1.2rem;margin-bottom:4px}.card2>p{margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.g2 .f{grid-column:1/-1}
+label.l{display:grid;gap:5px;font-size:.88rem;color:var(--mu)}label.l input,label.l select,label.l textarea{width:100%;border-radius:10px;color:var(--tx)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips label{cursor:pointer}.chips input{position:absolute;opacity:0}
+.chips span{display:inline-block;background:var(--s2);border-radius:999px;padding:6px 14px;font-size:.88rem}.chips input:checked+span{background:var(--ac);color:#1a1200;font-weight:700}
+.chips input:focus-visible+span{outline:2px solid var(--ac);outline-offset:2px}
+.up{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.up input[type=text],.up input[type=url]{flex:1;min-width:160px;border-radius:10px}.up progress{width:100%;height:8px;accent-color:var(--ac)}
+.prev{width:90px;aspect-ratio:2/3;border-radius:10px;object-fit:cover;background:var(--s2)}
+.sw{display:flex;gap:22px;flex-wrap:wrap}.sw label{display:flex;gap:8px;align-items:center;cursor:pointer}.sw input{accent-color:var(--ac);width:18px;height:18px}
+.th{width:44px;height:64px;border-radius:8px;object-fit:cover;flex:none}.mv{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--s2);flex-wrap:wrap}.mv .ti{flex:1;min-width:180px}
+.bd{font-size:.75rem;border-radius:999px;padding:2px 10px;background:var(--s2)}.bd.live{background:#1f4d33;color:#8affb0}
+.hint{font-size:.82rem;color:var(--mu)}.bar{position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 60%,transparent);padding:16px 0}
+@media(max-width:700px){.g2{grid-template-columns:1fr}}
+</style></head>
+<body>
+<div id="login" hidden><div class="w pg"><form class="fm" id="lf"><h1>Admin login</h1><input type="password" id="pw" placeholder="Admin password" required aria-label="Admin password" autocomplete="current-password"><button class="btn">Log in</button><p class="er" id="le" role="alert"></p><p class="mu"><a href="index.html">← Back to site</a></p></form></div></div>
+<div id="panel" hidden><header><div class="w top2"><a class="logo" href="index.html">Open<b>Reel</b> <span class="mu" style="font:500 .9rem Figtree">Admin</span></a><span class="sp"></span><a class="btn g sm" href="index.html" target="_blank" rel="noopener">View site</a><button class="btn g sm" id="lo">Log out</button></div></header>
+<div class="w pg">
+<div class="tb" id="tabs"><button data-t="movies" class="on">Movies</button><button data-t="form" id="tabform">Add movie</button><button data-t="genres">Genres</button><button data-t="ads">Advertisements</button><button data-t="stats">Overview</button></div>
+
+<section id="t-movies"><div class="fl"><input type="search" id="ms" placeholder="Search your movies…" aria-label="Search movies" style="flex:1"><button class="btn" id="addnew">+ Add movie</button></div><div id="ml"></div></section>
+
+<section id="t-form" hidden><h1 id="ft">Add a movie</h1>
+<div class="card2"><h2>1. Basic information</h2><p class="hint">The title, year and genres decide how people find the movie.</p><div class="g2">
+<label class="l f">Title *<input id="f-title" maxlength="120" autocomplete="off"></label>
+<label class="l">Release year *<input id="f-year" type="number" min="1888" max="2100"></label>
+<label class="l">Language<input id="f-lang" list="langs" placeholder="English"><datalist id="langs"><option>English</option><option>Spanish</option><option>French</option><option>German</option><option>Hindi</option><option>Urdu</option><option>Japanese</option><option>Silent</option></datalist></label>
+<label class="l">Runtime (minutes)<input id="f-rt" type="number" min="1"></label><label class="l">Rating (0–10)<input id="f-rate" type="number" min="0" max="10" step=".1"></label>
+<div class="f"><span class="hint">Genres * (tap to select)</span><div class="chips" id="chips" style="margin:8px 0"></div><div class="up"><input type="text" id="f-ng" placeholder="Add a new genre" aria-label="New genre"><button type="button" class="btn g sm" id="ang">Add genre</button></div></div>
+<label class="l f">Description<textarea id="f-desc" rows="4" maxlength="800"></textarea><span class="hint" id="dc">The first 155 characters appear in Google results.</span></label></div></div>
+
+<div class="card2"><h2>2. People</h2><div class="g2"><label class="l">Director<input id="f-dir"></label><label class="l">Cast (separate names with commas)<input id="f-cast" placeholder="Actor One, Actor Two"></label></div></div>
+
+<div class="card2"><h2>3. Poster, video and trailer</h2><p class="hint">Upload a file or paste a link. Only add video you have the right to stream.</p><div class="g2">
+<div class="f"><span class="hint">Poster image (JPG, PNG or WebP, up to 10 MB)</span><div class="up" style="margin-top:6px"><img id="pv" class="prev" alt="Poster preview" hidden><input type="text" id="f-poster" placeholder="https://… or upload →" aria-label="Poster URL"><label class="btn g sm" for="u-poster" style="cursor:pointer">Upload poster</label><input type="file" id="u-poster" accept="image/png,image/jpeg,image/webp" hidden><progress id="b-poster" max="100" hidden></progress></div></div>
+<div class="f"><span class="hint">Movie video (MP4 or WebM file, or a link to .mp4 / .webm / .m3u8)</span><div class="up" style="margin-top:6px"><input type="text" id="f-video" placeholder="https://… or upload →" aria-label="Video URL"><label class="btn g sm" for="u-video" style="cursor:pointer">Upload video</label><input type="file" id="u-video" accept="video/mp4,video/webm" hidden><progress id="b-video" max="100" hidden></progress></div></div>
+<label class="l f">Trailer or project page link (optional)<input id="f-trailer" type="url" placeholder="https://…"></label></div></div>
+
+<div class="card2"><h2>4. Rights</h2><p class="hint">Required before a movie can go live. Keep the evidence (licence, permission email, public-domain record).</p><div class="g2">
+<label class="l">License type *<select id="f-lic"><option value="public_domain">Public domain</option><option value="licensed">Licensed</option><option value="creator_permission">Creator permission</option></select></label>
+<label class="l">Proof of rights *<input id="f-proof" placeholder="e.g. Licence agreement with Studio X, 2026"></label></div></div>
+
+<div class="card2"><h2>5. Publishing</h2><div class="sw"><label><input type="checkbox" id="f-pub" checked> Published (visible to everyone)</label><label><input type="checkbox" id="f-feat"> Featured (home page banner)</label></div>
+<details style="margin-top:14px"><summary class="hint" style="cursor:pointer">Web address (advanced)</summary><label class="l" style="margin-top:8px">Web name<input id="f-slug"></label><span class="hint" id="su"></span></details></div>
+<div class="bar"><button class="btn" id="save">Save movie</button> <button class="btn g" id="cancel" type="button">Cancel</button> <span class="er" id="fe" role="alert"></span></div></section>
+
+<section id="t-genres" hidden><h1>Genres</h1><div class="fl"><input id="ng" placeholder="New genre name" aria-label="New genre name"><button class="btn" id="addg">Add genre</button></div><div id="gl"></div></section>
+<section id="t-ads" hidden><h1>Advertisements</h1><p class="mu" style="margin-bottom:14px">Ads appear on the home page and below the video player, never over it.</p>
+<div class="fl"><select id="ap" aria-label="Placement"><option value="home_banner">Home page banner</option><option value="movie_below_player">Below the video player</option></select><input id="at" placeholder="Ad text" aria-label="Ad text"><input id="al" type="url" placeholder="https://link" aria-label="Ad link"><button class="btn" id="aa">Add ad</button></div><div id="adl"></div></section>
+<section id="t-stats" hidden><h1>Overview</h1><div class="st" id="st"></div><p class="mu">For visitor analytics (page views, countries, devices), add a privacy-friendly tool such as Plausible or Google Analytics to the site.</p></section>
+</div></div><div id="toast" role="status"></div>
+<script src="admin.js"></script></body></html>

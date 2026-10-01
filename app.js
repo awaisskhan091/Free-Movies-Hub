@@ -1,15 +1,15 @@
 /* OpenReel shared script: data layer, renderers for every page, auth, player, admin. */
 "use strict";
 /* ---------- Data (stored in localStorage; swap for Supabase/Postgres API in production) ---------- */
-const SEED={users:[{"id":1,"name":"Admin","email":"admin@openreel.test","pw":"admin123","role":"admin","wl":[],"hist":[],"joined":"2026-01-01"}]};
+const SEED={users:[]};
 let DB=null,BASE=null,me=null;
 const LS=k=>JSON.parse(localStorage.getItem(k)||"null");
 async function loadDB(){
  try{const r=await fetch("movies.json",{cache:"no-cache"});if(!r.ok)throw 0;BASE=await r.json()}
  catch(e){BASE={movies:[],genres:[],ads:[]};document.getElementById("app").insertAdjacentHTML("beforebegin",'<p class="w pg er" role="alert">Could not load movies.json. Serve this folder over http (for example: python3 -m http.server 8000) instead of opening the files directly.</p>')}
  const L=LS("or_local")||{},del=L.deleted||[],ed=L.movies||{},vw=L.views||{};
- const movies=BASE.movies.filter(m=>!del.includes(m.id)).map(m=>ed[m.id]||m);
- Object.values(ed).forEach(m=>{if(!BASE.movies.some(b=>b.id==m.id))movies.push(m)});
+ const movies=BASE.movies.map(m=>({...m}));
+ 
  movies.forEach(m=>{if(vw[m.id]!=null)m.views=vw[m.id]});
  DB={movies,genres:L.genres||BASE.genres,users:L.users||SEED.users,ads:L.ads||BASE.ads,nextId:Math.max(L.nextId||0,1,...BASE.movies.map(m=>m.id+1),...Object.keys(ed).map(i=>+i+1))};
  me=DB.users.find(u=>u.id==localStorage.getItem("or_me"))||null}
@@ -69,7 +69,7 @@ P.movie=(q,s)=>{const m=DB.movies.find(x=>x.slug==s&&x.pub);if(!m)return P.nf();
  <p style="margin:14px 0;max-width:62ch">${esc(m.d)}</p><p><b>Director:</b> ${esc(m.dir)}</p><p><b>Cast:</b> ${m.cast.map(esc).join(", ")}</p>
  <p class="mu">Rights: ${m.lic.replace("_"," ")}${m.proof?" – "+esc(m.proof):""}</p>
  <div style="display:flex;gap:10px;margin:18px 0;flex-wrap:wrap"><button class="btn g" id="wl" aria-pressed="${!!inWl}">${inWl?"✓ In watchlist":"+ Add to watchlist"}</button>${m.tr?`<a class="btn g" href="${esc(m.tr)}" target="_blank" rel="noopener">Trailer / project page</a>`:""}</div></div></article>${row("Related movies",rel)}</div>`};
-P.login=()=>{seo("Log in – OpenReel","Log in to OpenReel.");return `<div class="w pg"><form class="fm" id="lf"><h1>Log in</h1><input name="email" type="email" placeholder="Email" required aria-label="Email"><input name="pw" type="password" placeholder="Password" required aria-label="Password"><button class="btn">Log in</button><p class="er" role="alert" id="er"></p><p class="mu"><a href="reset-password.html">Forgot password?</a> · <a href="signup.html">Create account</a></p><p class="mu">Demo admin: admin@openreel.test / admin123</p></form></div>`};
+P.login=()=>{seo("Log in – OpenReel","Log in to OpenReel.");return `<div class="w pg"><form class="fm" id="lf"><h1>Log in</h1><input name="email" type="email" placeholder="Email" required aria-label="Email"><input name="pw" type="password" placeholder="Password" required aria-label="Password"><button class="btn">Log in</button><p class="er" role="alert" id="er"></p><p class="mu"><a href="reset-password.html">Forgot password?</a> · <a href="signup.html">Create account</a></p></form></div>`};
 P.signup=()=>{seo("Sign up – OpenReel","Create a free OpenReel account.");return `<div class="w pg"><form class="fm" id="sf2"><h1>Create your account</h1><input name="name" placeholder="Display name" required aria-label="Display name"><input name="email" type="email" placeholder="Email" required aria-label="Email"><input name="pw" type="password" minlength="8" placeholder="Password (8+ characters)" required aria-label="Password"><button class="btn">Sign up</button><p class="er" role="alert" id="er"></p><p class="mu">Have an account? <a href="login.html">Log in</a></p></form></div>`};
 P.reset=()=>{seo("Reset password – OpenReel","Reset your OpenReel password.");return `<div class="w pg"><form class="fm" id="rf"><h1>Reset password</h1><input name="email" type="email" placeholder="Email" required aria-label="Email"><input name="pw" type="password" minlength="8" placeholder="New password" required aria-label="New password"><button class="btn">Reset password</button><p class="er" id="er" role="alert"></p><p class="mu">Demo mode sets the password directly. In production, Supabase emails a reset link.</p></form></div>`};
 P.profile=()=>{if(!need())return"";seo("My profile – OpenReel","Your OpenReel profile.");

@@ -1,29 +1,28 @@
-# OpenReel – multi-page streaming site
+# OpenReel – multi-page streaming site with an easy admin panel
 
-## Run it
-Serve the folder over http (the site loads `movies.json`):
-`python3 -m http.server 8000` then open http://localhost:8000
-
-## Add movies (everyone sees them)
-Edit **movies.json** and add an object to the `movies` list:
-
-```json
-{
-  "id": 9, "slug": "my-film-2020", "t": "My Film", "y": 2020, "lang": "English", "rt": 88, "rate": 7.5,
-  "g": ["Drama"], "d": "Short description.", "dir": "Director Name", "cast": ["Actor One", "Actor Two"],
-  "v": "https://your-storage.com/films/my-film.mp4",
-  "poster": "https://your-storage.com/posters/my-film.jpg",
-  "tr": "", "lic": "licensed", "proof": "Licence agreement with Studio X, 2026",
-  "feat": 0, "pub": 1, "views": 0, "c": ["#3a3358", "#a493d9"], "added": 9
-}
+## Start it (Node 18+, no installs needed)
 ```
-- `id` and `slug` must be unique. `lic` is `public_domain`, `licensed` or `creator_permission`; `proof` records your right to stream it.
-- `v` can be an `.mp4`/`.webm` file or an HLS `.m3u8` stream. Leave it `""` to show "no authorized video".
-- `feat: 1` puts the movie in the home page hero. `c` is the two poster gradient colours used when there is no `poster` image.
-- Then refresh the sitemap: `node tools/generate-sitemap.js https://your-domain.com`
+ADMIN_PASSWORD="choose-a-strong-password" SITE_URL="https://your-domain.com" node server.js
+```
+(Windows PowerShell: `$env:ADMIN_PASSWORD="choose-a-strong-password"; node server.js`)
 
-## Or use the admin panel
-Log in at login.html (demo: admin@openreel.test / admin123, change it), open Admin dashboard, add or edit movies, then click **Export movies.json** and replace the file on your server. Admin changes are stored in the browser until exported.
+- Site:   http://localhost:8000
+- Admin:  http://localhost:8000/admin.html
 
-## Other
-`database/schema.sql` is the PostgreSQL/Supabase schema for a full backend. Only add content you have the right to stream.
+## Add a movie (no code)
+1. Open admin.html and log in with your password.
+2. Click **Add movie**, fill in the 5 short sections (info, people, poster/video, rights, publishing).
+3. Upload the poster and video files, or paste links. Click **Save movie**. It is live immediately.
+
+Saving writes `movies.json`, regenerates `sitemap.xml`, and keeps a backup in `movies.json.bak`.
+Uploaded files go to `uploads/`. Deleting a movie deletes its uploaded files.
+
+## Deploying
+Run `node server.js` on any Node host (VPS, Render, Railway…) with a persistent disk, behind HTTPS.
+Set ADMIN_PASSWORD and SITE_URL. Optional: PORT, MAX_VIDEO_MB (default 4096).
+For large audiences, host videos on a CDN/video host and paste the link instead of uploading.
+
+## Notes
+- Every published movie needs a license type and proof of rights. Only add content you may legally stream.
+- Visitor accounts, watchlists and history are stored in each visitor's browser (demo). Use database/schema.sql with Supabase/PostgreSQL for real accounts.
+- `tools/generate-sitemap.js` rebuilds the sitemap manually if you edit movies.json by hand.
